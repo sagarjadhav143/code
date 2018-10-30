@@ -107,3 +107,40 @@ namespace AspWeb
         }
     }
 }
+
+---------------- SignUp------------
+    
+    protected void btnSignUp_Click(object sender, EventArgs e)
+        {
+            if(txtUserName.Text==""||txtPassword.Text=="")
+            {
+                string script = "alert(\"Please Try Again!\");";
+                ScriptManager.RegisterStartupScript(this, GetType(),
+                                      "ServerControlScript", script, true);
+                return;
+            }
+            else
+            {
+                string strsql = "select * from LogIn where UserName='"+txtUserName.Text+"' and Password='"+txtPassword.Text+"' and Flag='1'";
+                DataTable dt= cn.operationOnDataBase(strsql, 2);
+                if (dt.Rows.Count > 0)
+                {
+                    ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('User Add Sucessfully!');", true);
+                    HttpCookie un = new HttpCookie("username");
+                    un["UName"] = txtUserName.Text;
+                    Response.Cookies.Add(un);
+
+                    string url = "Main.aspx";
+                    Response.Redirect(url, false);
+                }
+                else
+                {
+                    string script = "alert(\"Invalid UserNamw or password!\");";
+                    ScriptManager.RegisterStartupScript(this, GetType(),
+                                          "ServerControlScript", script, true);
+                }
+               Clear();
+            }
+        }
+
+------------ ---------
