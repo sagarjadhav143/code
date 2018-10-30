@@ -108,6 +108,12 @@ namespace AspWeb
     }
 }
 
+--------------
+      <connectionStrings>
+    <add name="MConnectionString" connectionString="Data Source=.;Initial Catalog=Machine;User ID=sa;Password=123" providerName="System.Data.SqlClient" />
+  </connectionStrings>
+  ----------------
+
 ---------------- SignUp------------
     
     protected void btnSignUp_Click(object sender, EventArgs e)
