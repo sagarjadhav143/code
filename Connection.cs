@@ -162,3 +162,26 @@ namespace AspWeb
         if (custCnt == null || custCnt == "") { lblSMSCounter.Text = "0"; }
         else { lblSMSCounter.Text = custCnt; }
     }
+
+-----------------------load
+
+protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            HttpCookie uid = Request.Cookies["userid"];
+            if (uid == null)
+            {
+                string url = "SignUp.aspx";
+                Response.Redirect(url, false);
+            }
+            else
+            {
+                UserId = uid["UID"];
+                CountSms();
+                CountCustomer();
+                getNewCustomers();
+                NewSendSms();
+            }
+        }
+    }
