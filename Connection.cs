@@ -144,3 +144,21 @@ namespace AspWeb
         }
 
 ------------ ---------
+ private void getNewCustomers()
+    {      
+        DataTable dt = new DataTable();
+        string strsql = "select top 10 Name,MobNo,Email from CRM_Customers where CRM_ClientID=" + UserId + " ORDER BY CRM_CustId DESC ";
+        dt = cn.operationOnDataBase(strsql, 3);
+        gdvCustomer.DataSource = dt;
+        gdvCustomer.DataBind();
+    }
+
+    private void CountSms()
+    {
+        DataTable dt = new DataTable();
+        string strsql = "SELECT COUNT(*) as TotalCust from CRM_Customers where CRM_ClientID="+UserId+"";
+        dt = cn.operationOnDataBase(strsql, 3);
+        string custCnt = dt.Rows[0]["TotalCust"].ToString().Trim();
+        if (custCnt == null || custCnt == "") { lblSMSCounter.Text = "0"; }
+        else { lblSMSCounter.Text = custCnt; }
+    }
