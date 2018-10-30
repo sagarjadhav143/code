@@ -41,15 +41,6 @@ namespace AspWeb
                     {
                         con.Open();
                     }
-                
-                //else
-                //{
-                //    state = con.State;
-                //    if (state == ConnectionState.Closed)
-                //    {
-                //        con.Open();
-                //    }
-                //}
 
                 switch (queryNo)
                 {
