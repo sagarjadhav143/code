@@ -393,3 +393,257 @@ namespace EasyBusyHotel.DatabaseContext
 ------------
 remove home
 change rout.config
+
+
+-------get mul tbl
+private void GetEmployee()
+        {
+            try
+            {
+                using (DbEasyBusyHotelEntity dbCon = new DbEasyBusyHotelEntity())
+                {
+                    var result = (from per in dbCon.person.Where(x => x.ID == 1).DefaultIfEmpty()
+                                  from cont in dbCon.contact.Where(x => x.personId == per.ID).DefaultIfEmpty()
+                                  from login in dbCon.login.Where(x => x.personId == per.ID).DefaultIfEmpty()
+                                  select new
+                                  {
+                                      id = per.ID,
+                                      perName = per.name,
+                                      emailId = cont.emailId,
+                                      perAdd = cont.perAdd,
+                                      tempAdd = cont.tempAdd,
+                                      mobPrimary = cont.mobPrimary,
+                                      mobAlt = cont.mobAlt,
+                                      dob = cont.dob,
+                                      joinDate = cont.joinDate,
+                                      panNo = cont.panNo,
+                                      adharNo = cont.adharNo,
+                                      salAmt = cont.salAmt,
+                                      holiday = cont.holiday,
+                                      //otRate=cont
+                                      userName = login.userName,
+                                      password = login.password,
+                                      photo=cont.photo,
+                                  }).ToList();
+                    var employees = result.First();
+                    txtEmpId.Text = employees.id.ToString();
+                    txtEmpName.Text = employees.perName.ToString();
+                    txtEmailId.Text = employees.emailId.ToString();
+                    txtPerAddr.Text = employees.perAdd.ToString();
+                    txtTempAddr.Text = employees.tempAdd.ToString();
+                    txtMobileNo.Text = employees.mobPrimary.ToString();
+                    txtAltMobileNo.Text = employees.mobAlt.ToString();
+                    DateTime cnDob = Utility.ConvertMilliSecondsToDateTime(employees.dob.ToString());
+                    dtpBirthDate.Text = cnDob.ToShortDateString();
+                    DateTime cnJoin = Utility.ConvertMilliSecondsToDateTime(employees.joinDate.ToString());
+                    dtpJoiningDate.Text = cnJoin.ToShortDateString();
+                    txtPanNo.Text = employees.panNo.ToString();
+                    txtAdharNo.Text = employees.adharNo.ToString();
+                    txtSalary.Text = employees.salAmt.ToString();
+                    cmbHoilday.SelectedText = employees.holiday.ToString();
+                    if(employees.photo!=null)
+                    pictureBoxUserImage.Image = Functions.ConvertByteToImage(employees.photo);
+                    txtUserName.Text = employees.userName.ToString();
+                    txtPassword.Text = employees.password.ToString();
+                }
+            }
+            catch (Exception ex) { MessageBox.Show("" + ex); }
+        }
+
+---------------save mul tbl
+
+        private void btnSave_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (txtEmpName.Text.Trim() == "")
+                {
+                    MessageBox.Show("Please enter Name.", Utility.company_Info_String, enumMessageIcon.Information, enumMessageButton.OK);
+                    txt_ConfirmPassword.Text = string.Empty;
+                    return;
+                }
+                else if (txtPerAddr.Text.Trim() == "")
+                {
+                    MessageBox.Show("Please enter Permanent Address.", Utility.company_Info_String, enumMessageIcon.Information, enumMessageButton.OK);
+                    txt_ConfirmPassword.Text = string.Empty;
+                    return;
+                }
+                else if (!exprMo.IsMatch(txtMobileNo.Text))
+                {
+                    MessageBox.Show("Please Currect enter Mobile No.", Utility.company_Info_String, enumMessageIcon.Information, enumMessageButton.OK);
+                    txt_ConfirmPassword.Text = string.Empty;
+                    return;
+                }
+                else if (Post == "OWNER" || Post == "CAPTAIN" || Post == "STOCK USER" || Post == "WAITER" || Post == "KITCHEN USER" || Post == "GODOWN USER")
+                {
+                    if (txtUserName.Text.Trim() == "")
+                    {
+                        MessageBox.Show("Please enter Username.", Utility.company_Info_String, enumMessageIcon.Information, enumMessageButton.OK);
+                        return;
+                    }
+                    else if (txtPassword.Text.Trim() == "")
+                    {
+                        MessageBox.Show("Please enter Password.", Utility.company_Info_String, enumMessageIcon.Information, enumMessageButton.OK);
+                        return;
+                    }
+                    else if (txt_ConfirmPassword.Text.Trim() == "")
+                    {
+                        MessageBox.Show("Please enter confirm password.", Utility.company_Info_String, enumMessageIcon.Information, enumMessageButton.OK);
+                        return;
+                    }
+                    else if (txtPassword.Text.Trim() != txt_ConfirmPassword.Text.Trim())
+                    {
+                        MessageBox.Show("Password does not match", Utility.company_Info_String, enumMessageIcon.Information, enumMessageButton.OK);
+                        txt_ConfirmPassword.Text = txtPassword.Text = "";
+                        return;
+                    }
+                    else
+                    {
+                        if (Post != "")
+                        {
+                            string AltMob = "", basicSal = "", weekOff = "";
+                            if (txtAltMobileNo.Text == "") { AltMob = "0"; } else { AltMob = txtAltMobileNo.Text; }
+                            if (txtSalary.Text == "") { basicSal = "0"; } else { basicSal = txtSalary.Text; }
+                            if (cmbHoilday.SelectedIndex == 1) { weekOff = ""; } else { weekOff = cmbHoilday.SelectedText; }
+                            using (DbEasyBusyHotelEntity dbCon = new DbEasyBusyHotelEntity())
+                            {
+                               Person person = new Person()
+                               {
+                                   name = txtEmpName.Text,
+                                   type = Post,
+                                   Contacts = new List<Contact>
+                                   {
+                                      new Contact{
+                                       //personId = perId;
+                                        emailId = txtEmailId.Text,
+                                        perAdd = txtPerAddr.Text,
+                                        tempAdd = txtTempAddr.Text,
+                                        mobPrimary =txtMobileNo.Text,
+                                        mobAlt = AltMob,
+                                        dob = Utility.ConvertToDateInMilliseconds(dtpBirthDate.Text),
+                                        joinDate = Utility.ConvertToDateInMilliseconds(dtpJoiningDate.Text),
+                                        panNo = txtPanNo.Text,
+                                        adharNo = txtAdharNo.Text,
+                                        salAmt = Convert.ToInt64(basicSal),
+                                        holiday = weekOff,
+                                        photo=ConvertImageToByte(pictureBoxUserImage.ImageLocation),
+                                      },
+                                   },
+                                   Logins = new List<Login>
+                                   {
+                                      new Login{
+                                       userName=txtUserName.Text,
+                                       password=txtPassword.Text,
+                                       loginType=Post,
+                                      }
+                                   }
+                               };
+                                dbCon.Entry(person).State = System.Data.Entity.EntityState.Added;
+                                dbCon.SaveChanges();
+                            }
+                            if (FirstTimeIns == "1")
+                            {
+                                Form_Login lg = new Form_Login();
+                                this.Hide();
+                                lg.Show();
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex) { MessageBox.Show("" + ex); }
+        }
+
+        private void btnUpdate_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (txtEmpName.Text.Trim() == "")
+                {
+                    MessageBox.Show("Please enter Name.", Utility.company_Info_String, enumMessageIcon.Information, enumMessageButton.OK);
+                    txt_ConfirmPassword.Text = string.Empty;
+                    return;
+                }
+                else if (txtPerAddr.Text.Trim() == "")
+                {
+                    MessageBox.Show("Please enter Permanent Address.", Utility.company_Info_String, enumMessageIcon.Information, enumMessageButton.OK);
+                    txt_ConfirmPassword.Text = string.Empty;
+                    return;
+                }
+                else if (!exprMo.IsMatch(txtMobileNo.Text))
+                {
+                    MessageBox.Show("Please Currect enter Mobile No.", Utility.company_Info_String, enumMessageIcon.Information, enumMessageButton.OK);
+                    txt_ConfirmPassword.Text = string.Empty;
+                    return;
+                }
+                else if (Post == "OWNER" || Post == "CAPTAIN" || Post == "STOCK USER" || Post == "WAITER" || Post == "KITCHEN USER" || Post == "GODOWN USER")
+                {
+                    if (txtUserName.Text.Trim() == "")
+                    {
+                        MessageBox.Show("Please enter Username.", Utility.company_Info_String, enumMessageIcon.Information, enumMessageButton.OK);
+                        return;
+                    }
+                    else if (txtPassword.Text.Trim() == "")
+                    {
+                        MessageBox.Show("Please enter Password.", Utility.company_Info_String, enumMessageIcon.Information, enumMessageButton.OK);
+                        return;
+                    }
+                    else if (txt_ConfirmPassword.Text.Trim() == "")
+                    {
+                        MessageBox.Show("Please enter confirm password.", Utility.company_Info_String, enumMessageIcon.Information, enumMessageButton.OK);
+                        return;
+                    }
+                    else if (txtPassword.Text.Trim() != txt_ConfirmPassword.Text.Trim())
+                    {
+                        MessageBox.Show("Password does not match", Utility.company_Info_String, enumMessageIcon.Information, enumMessageButton.OK);
+                        txt_ConfirmPassword.Text = txtPassword.Text = "";
+                        return;
+                    }
+                    else
+                    {
+                        if (Post != "")
+                        {
+                            int EmpId = Convert.ToInt32(txtEmpId.Text);
+                            string AltMob = "", basicSal = "", weekOff = "";
+                            if (txtSalary.Text == "") { basicSal = "0"; } else { basicSal = txtSalary.Text; }
+                            if (cmbHoilday.SelectedIndex == 1) { weekOff = ""; } else { weekOff = cmbHoilday.SelectedText; }
+
+
+                            using (DbEasyBusyHotelEntity dbEasyBusyHotelEntity = new DbEasyBusyHotelEntity())
+                            {
+
+                                var selectCont = dbEasyBusyHotelEntity.contact.SingleOrDefault(c => c.personId == EmpId);
+                                var selectLogin = dbEasyBusyHotelEntity.login.SingleOrDefault(l => l.personId == EmpId);
+                                if (selectCont != null)
+                                {
+                                    selectCont.emailId = txtEmailId.Text;
+                                    selectCont.perAdd = txtPerAddr.Text;
+                                    selectCont.tempAdd = txtTempAddr.Text;
+                                    selectCont.mobPrimary = txtMobileNo.Text;
+                                    selectCont.mobAlt = AltMob;
+                                    selectCont.dob = Utility.ConvertToDateInMilliseconds(dtpBirthDate.Text);
+                                    selectCont.joinDate = Utility.ConvertToDateInMilliseconds(dtpJoiningDate.Text);
+                                    selectCont.panNo = txtPanNo.Text;
+                                    selectCont.adharNo = txtAdharNo.Text;
+                                    selectCont.salAmt = decimal.Parse(basicSal);
+                                    selectCont.holiday = weekOff;
+                                    selectCont.photo = ConvertImageToByte(pictureBoxUserImage.ImageLocation);
+                                    dbEasyBusyHotelEntity.Entry(selectCont).State = System.Data.Entity.EntityState.Modified;
+                                    dbEasyBusyHotelEntity.SaveChanges();
+                                }
+                                if (selectLogin != null)
+                                {
+                                    selectLogin.userName = txtUserName.Text;
+                                    selectLogin.password = txtPassword.Text;
+                                    selectLogin.loginType = Post;
+                                    dbEasyBusyHotelEntity.Entry(selectLogin).State = System.Data.Entity.EntityState.Modified;
+                                    dbEasyBusyHotelEntity.SaveChanges();
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
+            catch (Exception ex) { Utility.showExceptionMessage(ex.Message); }
+        }
